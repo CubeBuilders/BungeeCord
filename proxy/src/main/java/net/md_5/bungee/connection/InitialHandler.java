@@ -70,6 +70,11 @@ import net.md_5.bungee.util.AllowedCharacters;
 import net.md_5.bungee.util.BufUtil;
 import net.md_5.bungee.util.QuietException;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.net.InetAddress;
+import java.util.LinkedList;
+
 @RequiredArgsConstructor
 public class InitialHandler extends PacketHandler implements PendingConnection
 {
@@ -304,6 +309,26 @@ public class InitialHandler extends PacketHandler implements PendingConnection
             String[] split = handshake.getHost().split( "\0", 2 );
             handshake.setHost( split[0] );
             extraDataInHandshake = "\0" + split[1];
+        }
+
+        String[] pieces = extraDataInHandshake.split("\0");
+        try {
+            for (String piece : pieces) {
+                if (piece.startsWith("clientaddr:")) {
+                    if (!isTrustedProxy(getAddress())) {
+                        continue;
+                    }
+                    String[] a = piece.split(":");
+                    String addr = a[1];
+                    int port = Integer.parseInt(a[2]);
+                    if (addr.startsWith("ipv6.")) {
+                        addr = addr.substring(5).replace(".", ":");
+                    }
+                    forwardedSocketAddress = new InetSocketAddress(InetAddress.getByName(addr), port);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // SRV records can end with a . depending on DNS / client.
@@ -633,6 +658,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     @Override
     public InetSocketAddress getAddress()
     {
+        if (forwardedSocketAddress != null) return forwardedSocketAddress;
         return (InetSocketAddress) getSocketAddress();
     }
 
@@ -719,5 +745,35 @@ public class InitialHandler extends PacketHandler implements PendingConnection
         {
             brandMessage = input;
         }
+    }
+
+    private InetSocketAddress forwardedSocketAddress = null;
+    private LinkedList<String> trustedIPs = null;
+    private boolean isTrustedProxy(InetSocketAddress addr) {
+        if (trustedIPs == null) {
+            BufferedReader reader = null;
+            try {
+                LinkedList<String> ips = new LinkedList<>();
+                reader = new BufferedReader(new FileReader("trustproxy.txt"));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (!line.equals("")) {
+                        ips.add(line);
+                    }
+                }
+                trustedIPs = ips;
+            } catch (Exception e) {
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
+        if (trustedIPs == null) return false;
+        return trustedIPs.contains(addr.getAddress().getHostAddress());
     }
 }
