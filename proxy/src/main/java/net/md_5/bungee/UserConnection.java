@@ -532,7 +532,7 @@ public final class UserConnection implements ProxiedPlayer
     @Override
     public SocketAddress getSocketAddress()
     {
-        return ch.getRemoteAddress();
+        return pendingConnection.getAddress();
     }
 
     @Override
