@@ -1,3 +1,8 @@
+CubeBuilders Fork of BungeeCord
+===============================
+
+This is the fork of BungeeCord used by CubeBuilders. Any commits that are available exclusively on this repository but not on the [original repository from SpigotMC](https://www.spigotmc.org/go/bungeecord-git) are available under the [MIT License](LICENSE-CubeBuilders.txt).
+
 BungeeCord
 ==========
 Layer 7 proxy designed to link Minecraft servers.
