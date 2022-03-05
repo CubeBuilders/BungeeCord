@@ -80,6 +80,10 @@ import java.util.LinkedList;
 public class InitialHandler extends PacketHandler implements PendingConnection
 {
 
+    private static final int MINIMUM_MINECRAFT_PROTOCOL_VERSION = ProtocolConstants.MINECRAFT_1_17;
+    private static final String SERVER_NAME = "CubeBuilders";
+    private static final String SUPPORTED_VERSION = "1.19";
+
     private final BungeeCord bungee;
     private ChannelWrapper ch;
     @Getter
@@ -172,7 +176,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     public void handle(LegacyHandshake legacyHandshake) throws Exception
     {
         this.legacy = true;
-        ch.close( bungee.getTranslation( "outdated_client", bungee.getGameVersion() ) );
+        ch.close( bungee.getTranslation( "outdated_client", SUPPORTED_VERSION ) );
     }
 
     @Override
@@ -181,7 +185,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
         this.legacy = true;
         final boolean v1_5 = ping.isV1_5();
 
-        ServerPing legacy = new ServerPing( new ServerPing.Protocol( bungee.getName() + " " + bungee.getGameVersion(), bungee.getProtocolVersion() ),
+        ServerPing legacy = new ServerPing( new ServerPing.Protocol( SERVER_NAME + " " + SUPPORTED_VERSION, bungee.getProtocolVersion() ),
                 new ServerPing.Players( listener.getMaxPlayers(), bungee.getOnlineCount(), null ),
                 new TextComponent( TextComponent.fromLegacyText( listener.getMotd() ) ), (Favicon) null );
 
@@ -230,7 +234,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     private ServerPing getPingInfo(String motd, int protocol)
     {
         return new ServerPing(
-                new ServerPing.Protocol( bungee.getName() + " " + bungee.getGameVersion(), protocol ),
+                new ServerPing.Protocol( SERVER_NAME + " " + SUPPORTED_VERSION, protocol ),
                 new ServerPing.Players( listener.getMaxPlayers(), bungee.getOnlineCount(), null ),
                 motd, BungeeCord.getInstance().config.getFaviconObject()
         );
@@ -243,7 +247,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
 
         ServerInfo forced = AbstractReconnectHandler.getForcedHost( this );
         final String motd = ( forced != null ) ? forced.getMotd() : listener.getMotd();
-        final int protocol = ( ProtocolConstants.SUPPORTED_VERSION_IDS.contains( handshake.getProtocolVersion() ) ) ? handshake.getProtocolVersion() : bungee.getProtocolVersion();
+        final int protocol = ( ProtocolConstants.SUPPORTED_VERSION_IDS.contains( handshake.getProtocolVersion() ) && handshake.getProtocolVersion() >= MINIMUM_MINECRAFT_PROTOCOL_VERSION ) ? handshake.getProtocolVersion() : bungee.getProtocolVersion();
 
         Callback<ServerPing> pingBack = new Callback<ServerPing>()
         {
@@ -359,14 +363,14 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                 thisState = State.USERNAME;
                 ch.setProtocol( Protocol.LOGIN );
 
-                if ( !ProtocolConstants.SUPPORTED_VERSION_IDS.contains( handshake.getProtocolVersion() ) )
+                if ( !ProtocolConstants.SUPPORTED_VERSION_IDS.contains( handshake.getProtocolVersion() ) || handshake.getProtocolVersion() < MINIMUM_MINECRAFT_PROTOCOL_VERSION )
                 {
                     if ( handshake.getProtocolVersion() > bungee.getProtocolVersion() )
                     {
-                        disconnect( bungee.getTranslation( "outdated_server", bungee.getGameVersion() ) );
+                        disconnect( bungee.getTranslation( "outdated_server", SUPPORTED_VERSION ) );
                     } else
                     {
-                        disconnect( bungee.getTranslation( "outdated_client", bungee.getGameVersion() ) );
+                        disconnect( bungee.getTranslation( "outdated_client", SUPPORTED_VERSION ) );
                     }
                     return;
                 }
