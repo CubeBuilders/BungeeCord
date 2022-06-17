@@ -37,6 +37,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.TranslatableComponent;
 import net.md_5.bungee.api.config.ListenerInfo;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.PendingConnection;
@@ -619,8 +620,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
         if ( oldName != null )
         {
             // TODO See #1218
-            disconnect( bungee.getTranslation( "already_connected_proxy" ) );
-            return;
+            oldName.disconnect( new TranslatableComponent("multiplayer.disconnect.duplicate_login") );
         }
 
         if ( true || isOnlineMode() )
@@ -630,8 +630,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
             if ( oldID != null )
             {
                 // TODO See #1218
-                disconnect( bungee.getTranslation( "already_connected_proxy" ) );
-                return;
+                oldID.disconnect( new TranslatableComponent("multiplayer.disconnect.duplicate_login") );
             }
         }
 
