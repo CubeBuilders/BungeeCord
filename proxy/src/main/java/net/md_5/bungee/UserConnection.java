@@ -795,7 +795,7 @@ public final class UserConnection implements ProxiedPlayer
         {
             serverData = new ServerData();
         }
-        serverData.setEnforcesSecureChat( BungeeCord.getInstance().config.isEnforceSecureProfile() );
+        serverData.setEnforcesSecureChat( true );
         ServerData serverDataToSend = serverData.copy();
         boolean chatPreviewEnabled = handlingChatPreview || backendHandlingChatPreview;
         boolean sendSetDisplayChatPreview = false;
