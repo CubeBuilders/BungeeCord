@@ -688,6 +688,9 @@ public class DownstreamBridge extends PacketHandler
             }
         }
 
+        modified = true;
+        io.siggi.interceptbrigadier.InterceptBrigadier.intercept(con, commands.getRoot(), con.getPendingConnection().getVersion());
+
         if ( modified )
         {
             con.unsafe().sendPacket( commands );
