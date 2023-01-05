@@ -23,6 +23,7 @@ public class ServerPing
 {
 
     private Protocol version;
+    private final boolean preventsChatReports = true;
 
     @Data
     @AllArgsConstructor
