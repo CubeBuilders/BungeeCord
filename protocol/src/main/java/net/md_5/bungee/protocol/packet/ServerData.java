@@ -40,7 +40,8 @@ public class ServerData extends DefinedPacket
 
         if ( protocolVersion >= ProtocolConstants.MINECRAFT_1_19_1 )
         {
-            enforceSecure = buf.readBoolean();
+            buf.readBoolean();
+            enforceSecure = true;
         }
     }
 
@@ -72,7 +73,7 @@ public class ServerData extends DefinedPacket
 
         if ( protocolVersion >= ProtocolConstants.MINECRAFT_1_19_1 )
         {
-            buf.writeBoolean( enforceSecure );
+            buf.writeBoolean( true );
         }
     }
 
