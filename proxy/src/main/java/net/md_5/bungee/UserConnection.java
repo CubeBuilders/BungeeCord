@@ -156,6 +156,10 @@ public final class UserConnection implements ProxiedPlayer
         }
     };
 
+    @Getter
+    @Setter
+    private Object configurationSkipperMeta = null;
+
     public boolean init()
     {
         this.entityRewrite = EntityMap.getEntityMap( getPendingConnection().getVersion() );

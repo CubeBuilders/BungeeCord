@@ -11,6 +11,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
+import io.siggi.configurationskipper.ConfigurationSkipper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.api.ChatColor;
@@ -48,6 +49,7 @@ import net.md_5.bungee.protocol.packet.GameState;
 import net.md_5.bungee.protocol.packet.Handshake;
 import net.md_5.bungee.protocol.packet.Kick;
 import net.md_5.bungee.protocol.packet.Login;
+import net.md_5.bungee.protocol.packet.LoginAcknowledged;
 import net.md_5.bungee.protocol.packet.LoginPayloadRequest;
 import net.md_5.bungee.protocol.packet.LoginPayloadResponse;
 import net.md_5.bungee.protocol.packet.LoginRequest;
@@ -361,6 +363,11 @@ public class ServerConnector extends PacketHandler
             if ( user.getServer() != null )
             {
                 // Begin config mode
+                if (ConfigurationSkipper.supportsVersion(user.getPendingConnection().getVersion())) {
+                    server.getCh().setDecodeProtocol(Protocol.CONFIGURATION);
+                    server.getCh().write(new LoginAcknowledged());
+                    server.getCh().setEncodeProtocol(Protocol.CONFIGURATION);
+                } else
                 user.unsafe().sendPacket( new StartConfiguration() );
             } else
             {

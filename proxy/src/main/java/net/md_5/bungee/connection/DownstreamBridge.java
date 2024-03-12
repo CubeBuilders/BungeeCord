@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import io.siggi.configurationskipper.ConfigurationSkipper;
 import lombok.RequiredArgsConstructor;
 import net.md_5.bungee.ServerConnection;
 import net.md_5.bungee.ServerConnection.KeepAliveData;
@@ -56,6 +58,7 @@ import net.md_5.bungee.protocol.Protocol;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.BossBar;
 import net.md_5.bungee.protocol.packet.Commands;
+import net.md_5.bungee.protocol.packet.FinishConfiguration;
 import net.md_5.bungee.protocol.packet.KeepAlive;
 import net.md_5.bungee.protocol.packet.Kick;
 import net.md_5.bungee.protocol.packet.Login;
@@ -70,6 +73,7 @@ import net.md_5.bungee.protocol.packet.ScoreboardScore;
 import net.md_5.bungee.protocol.packet.ScoreboardScoreReset;
 import net.md_5.bungee.protocol.packet.ServerData;
 import net.md_5.bungee.protocol.packet.SetCompression;
+import net.md_5.bungee.protocol.packet.StartConfiguration;
 import net.md_5.bungee.protocol.packet.TabCompleteResponse;
 import net.md_5.bungee.tab.TabList;
 
@@ -142,6 +146,22 @@ public class DownstreamBridge extends PacketHandler
         if ( rewrite != null && con.getCh().getEncodeProtocol() == Protocol.GAME )
         {
             rewrite.rewriteClientbound( packet.buf, con.getServerEntityId(), con.getClientEntityId(), con.getPendingConnection().getVersion() );
+        }
+        if (packet.protocol == Protocol.CONFIGURATION) {
+            switch (con.getCh().getEncodeProtocol()) {
+                case GAME: {
+                    packet = ConfigurationSkipper.handleClientbound(packet, con, () -> {
+                        con.getPendingConnection().unsafe().sendPacket(new StartConfiguration());
+                    }, () -> {
+                        server.unsafe().sendPacket(new FinishConfiguration());
+                    });
+                    if (packet == null) return;
+                }
+                break;
+                case CONFIGURATION:
+                    ConfigurationSkipper.handleClientbound(packet, con);
+                    break;
+            }
         }
         con.sendPacket( packet );
     }

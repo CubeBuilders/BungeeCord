@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+
+import io.siggi.configurationskipper.ConfigurationSkipper;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.ServerConnection;
 import net.md_5.bungee.ServerConnection.KeepAliveData;
@@ -140,6 +142,10 @@ public class UpstreamBridge extends PacketHandler
         if ( server != null && server.isConnected() )
         {
             Protocol serverEncode = server.getCh().getEncodeProtocol();
+            if (serverEncode == Protocol.CONFIGURATION && packet.protocol == Protocol.GAME) {
+                packet = ConfigurationSkipper.handleServerbound(packet, con);
+                if (packet == null) return;
+            } else
             // #3527: May still have old packets from client in game state when switching server to configuration state - discard those
             if ( packet.protocol != serverEncode )
             {
